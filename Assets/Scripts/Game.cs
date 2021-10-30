@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class Game : MonoBehaviour
 {
+    private const int DEFAULT_GRID_SIZE = 11;
     private const int MARKS_IN_A_ROW_FOR_WIN = 5;
 
     [SerializeField] private Texture ringTexture;
@@ -15,20 +16,29 @@ public class Game : MonoBehaviour
     [SerializeField] private GameObject ringCollection;
     [SerializeField] private RawImage currentMarkImage;
     [SerializeField] private float markFadeAlpha;
+    [SerializeField] private int minimumDistanceToBorder;
 
     private readonly Dictionary<Vector2Int, Mark> placedMarks = new Dictionary<Vector2Int, Mark>();
     private readonly Dictionary<Vector2Int, SpriteRenderer> spriteRenderers = new Dictionary<Vector2Int, SpriteRenderer>();
     private Mark CurrentMark { get; set; } = Mark.Cross;
+
+    private int LowestSquareX { get; set; } = DEFAULT_GRID_SIZE / -2;
+    private int HighestSquareX { get; set; } = DEFAULT_GRID_SIZE / 2;
+    private int LowestSquareY { get; set; } = DEFAULT_GRID_SIZE / -2;
+    private int HighestSquareY { get; set; } = DEFAULT_GRID_SIZE / 2;
 
     private void OnMouseDown()
     {
         Vector3 mousePositionInWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector3 snapPosition = new Vector3(Mathf.Round(mousePositionInWorld.x), Mathf.Round(mousePositionInWorld.y), 0);
         Vector2Int logicalPosition = new Vector2Int((int)snapPosition.x, (int)snapPosition.y);
+
         if (placedMarks.ContainsKey(logicalPosition))
             return;
-        
+
+        Debug.Log($"Placing mark at x {logicalPosition.x} y {logicalPosition.y}");
         PlaceCurrentMarkAt(logicalPosition);
+        ExpandGrid(logicalPosition);
         if (CheckForWin(logicalPosition, out IEnumerable<Vector2Int> winMarkPositions))
         {
             EndGame(winMarkPositions);
@@ -43,6 +53,33 @@ public class Game : MonoBehaviour
     {
         Cross,
         Ring
+    }
+
+    private void ExpandGrid(Vector2Int placedMark)
+    {
+        int rightBorderDistance = HighestSquareX - placedMark.x;
+        for (int i = 0; i < minimumDistanceToBorder - rightBorderDistance; i++)
+        {
+            Debug.Log("Expanding to right..");
+        }
+
+        int leftBorderDistance = Mathf.Abs(LowestSquareX - placedMark.x);
+        for (int i = 0; i < minimumDistanceToBorder - leftBorderDistance; i++)
+        {
+            Debug.Log("Expanding to left..");
+        }
+
+        int upBorderDistance = HighestSquareY - placedMark.y;
+        for (int i = 0; i < minimumDistanceToBorder - upBorderDistance; i++)
+        {
+            Debug.Log("Expanding to up..");
+        }
+
+        int downBorderDistance = Mathf.Abs(LowestSquareX - placedMark.y);
+        for (int i = 0; i < minimumDistanceToBorder - downBorderDistance; i++)
+        {
+            Debug.Log("Expanding to down..");
+        }
     }
 
     private void EndGame(IEnumerable<Vector2Int> winMarkPositions)

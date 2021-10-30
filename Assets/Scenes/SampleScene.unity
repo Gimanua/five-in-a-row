@@ -1812,6 +1812,7 @@ MonoBehaviour:
   ringCollection: {fileID: 930696750}
   currentMarkImage: {fileID: 43992084}
   markFadeAlpha: 0.4
+  minimumDistanceToBorder: 3
 --- !u!4 &1574195353
 Transform:
   m_ObjectHideFlags: 0
